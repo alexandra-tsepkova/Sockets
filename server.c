@@ -1,7 +1,6 @@
 #include "libs.h"
 
-int my_server(int argc, char **argv) {
-    char buf[100];
+int main(int argc, char **argv) {
     int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     if(sock_fd < 0) {
         printf("Can't create socket\n");
@@ -16,6 +15,8 @@ int my_server(int argc, char **argv) {
         return -1;
     }
 
+while(1) {
+    char buf[100];
     if (listen(sock_fd, 1) < 0) {
         printf("Can't connect to socket\n");
         close(sock_fd);
@@ -30,25 +31,28 @@ int my_server(int argc, char **argv) {
         return -1;
     }
 
+    int mes_size = read(newsock_fd, buf, sizeof(buf));
+    if (mes_size > sizeof(buf)) {
+          printf("Error while receiving message\n");
+          return -1;
+    }
 
-    if (strcmp(argv[1],"PRINT")) {
-
-        int pr_size = strlen(argv[1]);
-        int mes_size = read(newsock_fd, buf, pr_size);
-        if (mes_size != pr_size) {
-            printf("Error while receiving message\n");
-            return -1;
+        if(buf[0] == '1') {
+            printf("\nReceived message: ");
+            puts(buf + 1);
+            close(newsock_fd);
+            memset(buf, 0, sizeof(buf));
+        }
+        else if(buf[0] == '0') {
+            printf("\nShutting down....");
+            close(newsock_fd);
+            break;
         }
 
-        printf("\nReceived message: ");
-        puts(buf);
-
     }
 
-    if (strcmp(argv[2], "EXIT") == 0) {
-        close(sock_fd);
-
-    }
+    close(sock_fd);
+    printf("\nDisconnected\n");
 
 }
 
